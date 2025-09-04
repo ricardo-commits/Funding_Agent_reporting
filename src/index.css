@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Funding Agent Dashboard Design System */
+
+@layer base {
+  :root {
+    /* Funding Agent Brand Colors */
+    --fa-bg: 216 25% 96%;
+    --fa-surface: 0 0% 100%;
+    --fa-text: 217 33% 17%;
+    --fa-muted: 215 16% 47%;
+    --fa-primary: 217 91% 60%;
+    --fa-primary-weak: 217 100% 97%;
+    --fa-success: 142 76% 36%;
+    --fa-warning: 45 93% 47%;
+    --fa-danger: 0 72% 51%;
+    --fa-border: 220 13% 91%;
+
+    /* Semantic Token Mapping */
+    --background: var(--fa-bg);
+    --foreground: var(--fa-text);
+    --card: var(--fa-surface);
+    --card-foreground: var(--fa-text);
+    --popover: var(--fa-surface);
+    --popover-foreground: var(--fa-text);
+    --primary: var(--fa-primary);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--fa-primary-weak);
+    --secondary-foreground: var(--fa-primary);
+    --muted: 220 13% 95%;
+    --muted-foreground: var(--fa-muted);
+    --accent: var(--fa-primary-weak);
+    --accent-foreground: var(--fa-primary);
+    --destructive: var(--fa-danger);
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--fa-border);
+    --input: var(--fa-border);
+    --ring: var(--fa-primary);
+
+    /* Design System Values */
+    --radius: 10px;
+    --shadow: 0 6px 24px hsl(217 33% 17% / 0.06);
+    --shadow-lg: 0 20px 25px -5px hsl(217 33% 17% / 0.1);
+
+    /* Sidebar */
+    --sidebar-background: var(--fa-surface);
+    --sidebar-foreground: var(--fa-text);
+    --sidebar-primary: var(--fa-primary);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--fa-primary-weak);
+    --sidebar-accent-foreground: var(--fa-primary);
+    --sidebar-border: var(--fa-border);
+    --sidebar-ring: var(--fa-primary);
+
+    /* Typography */
+    --font-heading: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .dark {
+    /* Dark mode colors */
+    --fa-bg: 217 33% 17%;
+    --fa-surface: 217 33% 15%;
+    --fa-text: 0 0% 95%;
+    --fa-muted: 215 20% 65%;
+    --fa-primary: 217 91% 70%;
+    --fa-primary-weak: 217 50% 25%;
+    --fa-success: 142 76% 46%;
+    --fa-warning: 45 93% 57%;
+    --fa-danger: 0 72% 61%;
+    --fa-border: 217 32% 25%;
+
+    /* Updated semantic mappings for dark mode */
+    --background: var(--fa-bg);
+    --foreground: var(--fa-text);
+    --card: var(--fa-surface);
+    --card-foreground: var(--fa-text);
+    --popover: var(--fa-surface);
+    --popover-foreground: var(--fa-text);
+    --primary: var(--fa-primary);
+    --primary-foreground: 217 33% 15%;
+    --secondary: var(--fa-primary-weak);
+    --secondary-foreground: var(--fa-text);
+    --muted: 217 32% 20%;
+    --muted-foreground: var(--fa-muted);
+    --accent: var(--fa-primary-weak);
+    --accent-foreground: var(--fa-text);
+    --destructive: var(--fa-danger);
+    --destructive-foreground: var(--fa-text);
+    --border: var(--fa-border);
+    --input: var(--fa-border);
+    --ring: var(--fa-primary);
+
+    --sidebar-background: var(--fa-surface);
+    --sidebar-foreground: var(--fa-text);
+    --sidebar-primary: var(--fa-primary);
+    --sidebar-primary-foreground: 217 33% 15%;
+    --sidebar-accent: var(--fa-primary-weak);
+    --sidebar-accent-foreground: var(--fa-text);
+    --sidebar-border: var(--fa-border);
+    --sidebar-ring: var(--fa-primary);
+
+    /* Darker shadows for dark mode */
+    --shadow: 0 6px 24px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 20px 25px -5px hsl(0 0% 0% / 0.4);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
