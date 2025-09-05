@@ -21,5 +21,5 @@ export function useCdnChart(config: AnyObj) {
     };
   }, [JSON.stringify(config)]);
 
-  return canvasRef;
+  return { canvasRef, chartRef };
 }

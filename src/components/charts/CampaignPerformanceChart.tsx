@@ -1,5 +1,6 @@
 import React from 'react';
 import { useCdnChart } from './useCdnChart';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { CampaignSplitEmail } from '@/types/dashboard';
 
 type Props = {
@@ -8,7 +9,11 @@ type Props = {
 };
 
 export const CampaignPerformanceChart: React.FC<Props> = ({ campaigns, className }) => {
-  const ref = useCdnChart({
+  const { theme } = useTheme();
+  const textColor = theme === 'dark' ? '#f3f4f6' : '#374151'; // gray-100 : gray-700
+  const titleColor = theme === 'dark' ? '#f9fafb' : '#111827'; // gray-50 : gray-900
+  
+  const { canvasRef } = useCdnChart({
     type: 'line',
     data: {
       labels: campaigns.map(c => c.campaign_name),
@@ -40,6 +45,7 @@ export const CampaignPerformanceChart: React.FC<Props> = ({ campaigns, className
         title: {
           display: true,
           text: 'Top 5 Campaigns Performance',
+          color: titleColor,
           font: {
             size: 16,
             weight: 'bold'
@@ -47,24 +53,39 @@ export const CampaignPerformanceChart: React.FC<Props> = ({ campaigns, className
         },
         legend: {
           display: true,
-          position: 'top'
+          position: 'top',
+          labels: {
+            color: textColor
+          }
         }
       },
       scales: {
         y: {
           beginAtZero: true,
           ticks: {
-            precision: 0
+            precision: 0,
+            color: textColor
           },
           title: {
             display: true,
-            text: 'Number of Replies'
+            text: 'Number of Replies',
+            color: textColor
+          },
+          grid: {
+            color: theme === 'dark' ? '#374151' : '#e5e7eb'
           }
         },
         x: {
+          ticks: {
+            color: textColor
+          },
           title: {
             display: true,
-            text: 'Campaigns'
+            text: 'Campaigns',
+            color: textColor
+          },
+          grid: {
+            color: theme === 'dark' ? '#374151' : '#e5e7eb'
           }
         }
       },
@@ -78,7 +99,7 @@ export const CampaignPerformanceChart: React.FC<Props> = ({ campaigns, className
   return (
     <div className={`w-full ${className ?? ''}`}>
       <div className="h-80 w-full">
-        <canvas ref={ref} />
+        <canvas ref={canvasRef} />
       </div>
     </div>
   );

@@ -177,34 +177,34 @@ export default function Campaigns() {
 
                     {/* Key Metrics */}
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-100">
+                      <div className="text-center p-3 bg-primary/10 rounded-lg border border-primary/20">
                         <div className="flex items-center justify-center mb-1">
-                          <MessageSquare className="h-4 w-4 text-blue-600" />
+                          <MessageSquare className="h-4 w-4 text-primary" />
                         </div>
-                        <div className="text-lg font-bold text-blue-700">
+                        <div className="text-lg font-bold text-primary">
                           {campaign.total_replies}
                         </div>
-                        <div className="text-xs text-blue-600">Total</div>
+                        <div className="text-xs text-primary/80">Total</div>
                       </div>
                       
-                      <div className="text-center p-3 bg-green-50 rounded-lg border border-green-100">
+                      <div className="text-center p-3 bg-fa-success/10 rounded-lg border border-fa-success/20">
                         <div className="flex items-center justify-center mb-1">
-                          <TrendingUp className="h-4 w-4 text-green-600" />
+                          <TrendingUp className="h-4 w-4 text-fa-success" />
                         </div>
-                        <div className="text-lg font-bold text-green-700">
+                        <div className="text-lg font-bold text-fa-success">
                           {campaign.positive_replies || 0}
                         </div>
-                        <div className="text-xs text-green-600">Positive</div>
+                        <div className="text-xs text-fa-success/80">Positive</div>
                       </div>
                       
-                      <div className="text-center p-3 bg-red-50 rounded-lg border border-red-100">
+                      <div className="text-center p-3 bg-fa-danger/10 rounded-lg border border-fa-danger/20">
                         <div className="flex items-center justify-center mb-1">
-                          <TrendingDown className="h-4 w-4 text-red-600" />
+                          <TrendingDown className="h-4 w-4 text-fa-danger" />
                         </div>
-                        <div className="text-lg font-bold text-red-700">
+                        <div className="text-lg font-bold text-fa-danger">
                           {campaign.negative_replies || 0}
                         </div>
-                        <div className="text-xs text-red-600">Negative</div>
+                        <div className="text-xs text-fa-danger/80">Negative</div>
                       </div>
                     </div>
 
@@ -261,7 +261,6 @@ export default function Campaigns() {
           {topCampaigns && topCampaigns.length > 0 ? (
             <CampaignPerformanceChart 
               campaigns={topCampaigns}
-              className="h-80"
             />
           ) : (
             <div className="text-center py-8 text-muted-foreground p-6">

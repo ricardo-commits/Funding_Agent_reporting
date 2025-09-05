@@ -96,7 +96,6 @@ export default function Responses() {
           {labelData.length > 0 ? (
             <ResponseLabelPieChart 
               labelData={labelData.sort((a, b) => b.value - a.value)}
-              className="h-80"
             />
           ) : (
             <div className="text-center py-8 text-muted-foreground">
