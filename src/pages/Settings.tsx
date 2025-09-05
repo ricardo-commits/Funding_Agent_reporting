@@ -13,7 +13,7 @@ export default function Settings() {
   const { toast } = useToast();
 
   const embedCode = `<iframe
-  src="${window.location.origin}"
+  src="https://funding-agent-reporting.netlify.app/"
   style="width:100%;height:100vh;border:0;border-radius:10px;background:#f6f8fb"
   title="Funding Agent Reporting"
   loading="lazy"
