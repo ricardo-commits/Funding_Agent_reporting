@@ -1504,7 +1504,7 @@ export const useEmailResponses = (campaignId?: string) => {
           .from('responses')
           .select(`
             *,
-            leads(company_name, full_name),
+            leads(company_name, full_name, campaign_id, campaigns(campaign_name)),
             campaigns(campaign_name)
           `)
           .eq('channel', 'email')
@@ -1543,14 +1543,24 @@ export const useEmailResponses = (campaignId?: string) => {
         }
         
         // Transform to expected format and clean campaign names
-        return data?.map(item => ({
-          ...item,
-          created_at: item.received_at || new Date().toISOString(), // Use received_at as fallback
-          campaigns: item.campaigns ? {
-            ...item.campaigns,
-            campaign_name: item.campaigns.campaign_name?.replace(/\s*\(catch_all\)\s*$/i, '').trim() || item.campaigns.campaign_name
-          } : item.campaigns
-        })) || [];
+        return data?.map(item => {
+          // Use response campaign if available, otherwise fall back to lead campaign
+          const responseCampaign = item.campaigns;
+          const leadCampaign = item.leads?.campaigns;
+          const effectiveCampaign = responseCampaign || leadCampaign;
+          
+          // Clean campaign name
+          const cleanCampaignName = effectiveCampaign?.campaign_name?.replace(/\s*\(catch_all\)\s*$/i, '').trim() || effectiveCampaign?.campaign_name;
+          
+          return {
+            ...item,
+            created_at: item.received_at || new Date().toISOString(), // Use received_at as fallback
+            campaigns: effectiveCampaign ? {
+              ...effectiveCampaign,
+              campaign_name: cleanCampaignName
+            } : null
+          };
+        }) || [];
       } catch (error) {
         console.error('Email responses error:', error);
         return [];
