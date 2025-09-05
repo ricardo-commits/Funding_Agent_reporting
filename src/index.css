@@ -117,3 +117,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .logo-shadow {
+    filter: drop-shadow(1px 1px 1px #e6ffac);
+  }
+}

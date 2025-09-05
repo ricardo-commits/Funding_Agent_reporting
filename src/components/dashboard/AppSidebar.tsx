@@ -77,7 +77,7 @@ export function AppSidebar() {
             <img 
               src="https://cdn.prod.website-files.com/67efd26a8d1c97e288c50c5b/67efe2bf18508d8ae1163d12_Group%2091.svg" 
               alt="Logo" 
-              className="w-full h-auto max-h-12"
+              className="w-full h-auto max-h-12 logo-shadow"
             />
             <h2 className="text-lg font-heading font-semibold text-foreground">
               Dashboard
