@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
+import { ResponseLabelPieChart } from '../components/charts/ResponseLabelPieChart';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -89,25 +90,20 @@ export default function Responses() {
         <h2 className="text-xl sm:text-2xl font-heading font-bold text-foreground">Email Response Analytics</h2>
       </div>
 
-      {/* Label Distribution Summary */}
+      {/* Response Label Distribution Pie Chart */}
       <Card className="shadow-sm border border-border/50">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-foreground">Response Label Distribution</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {labelData.sort((a, b) => b.value - a.value).map((item, index) => (
-              <div key={index} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                <span className="text-sm text-muted-foreground capitalize">{item.name}</span>
-                <span className="font-medium">{item.value}</span>
-              </div>
-            ))}
-            {labelData.length === 0 && (
-              <div className="col-span-full text-center py-8 text-muted-foreground">
-                No response label data available
-              </div>
-            )}
-          </div>
+        <CardContent className="p-6">
+          {labelData.length > 0 ? (
+            <ResponseLabelPieChart 
+              labelData={labelData.sort((a, b) => b.value - a.value)}
+              className="h-80"
+            />
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No response label data available</p>
+              <p className="text-sm mt-2">Response labels will appear here once data is loaded</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

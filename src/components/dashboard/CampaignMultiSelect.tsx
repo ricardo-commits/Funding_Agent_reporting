@@ -31,16 +31,16 @@ export function CampaignMultiSelect({ className }: CampaignMultiSelectProps) {
 
   const selectedCampaigns = filters.campaign || [];
   
-  const handleToggleCampaign = (campaignId: string) => {
-    const newSelection = selectedCampaigns.includes(campaignId)
-      ? selectedCampaigns.filter(id => id !== campaignId)
-      : [...selectedCampaigns, campaignId];
+  const handleToggleCampaign = (campaignName: string) => {
+    const newSelection = selectedCampaigns.includes(campaignName)
+      ? selectedCampaigns.filter(name => name !== campaignName)
+      : [...selectedCampaigns, campaignName];
     
     setCampaign(newSelection.length > 0 ? newSelection : undefined);
   };
 
-  const handleRemoveCampaign = (campaignId: string) => {
-    const newSelection = selectedCampaigns.filter(id => id !== campaignId);
+  const handleRemoveCampaign = (campaignName: string) => {
+    const newSelection = selectedCampaigns.filter(name => name !== campaignName);
     setCampaign(newSelection.length > 0 ? newSelection : undefined);
   };
 
@@ -55,8 +55,7 @@ export function CampaignMultiSelect({ className }: CampaignMultiSelectProps) {
   const getDisplayText = () => {
     if (selectedCampaigns.length === 0) return 'Select campaigns...';
     if (selectedCampaigns.length === 1) {
-      const campaign = campaigns?.find(c => c.id === selectedCampaigns[0]);
-      return campaign?.campaign_name || 'Selected campaign';
+      return selectedCampaigns[0];
     }
     return `${selectedCampaigns.length} campaigns selected`;
   };
@@ -101,19 +100,18 @@ export function CampaignMultiSelect({ className }: CampaignMultiSelectProps) {
                 </Button>
               </div>
               <div className="flex flex-wrap gap-1">
-                {selectedCampaigns.map(campaignId => {
-                  const campaign = campaigns?.find(c => c.id === campaignId);
+                {selectedCampaigns.map(campaignName => {
                   return (
                     <Badge
-                      key={campaignId}
+                      key={campaignName}
                       variant="secondary"
                       className="flex items-center gap-1 pr-1"
                     >
                       <span className="truncate max-w-32">
-                        {campaign?.campaign_name || 'Unknown'}
+                        {campaignName}
                       </span>
                       <button
-                        onClick={() => handleRemoveCampaign(campaignId)}
+                        onClick={() => handleRemoveCampaign(campaignName)}
                         className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
                       >
                         <X className="h-3 w-3" />
@@ -137,12 +135,12 @@ export function CampaignMultiSelect({ className }: CampaignMultiSelectProps) {
                   key={campaign.id}
                   className={cn(
                     'flex items-center px-3 py-2 cursor-pointer hover:bg-accent',
-                    selectedCampaigns.includes(campaign.id) && 'bg-accent'
+                    selectedCampaigns.includes(campaign.campaign_name) && 'bg-accent'
                   )}
-                  onClick={() => handleToggleCampaign(campaign.id)}
+                  onClick={() => handleToggleCampaign(campaign.campaign_name)}
                 >
                   <div className="flex items-center justify-center w-4 h-4 mr-3">
-                    {selectedCampaigns.includes(campaign.id) && (
+                    {selectedCampaigns.includes(campaign.campaign_name) && (
                       <Check className="h-4 w-4 text-primary" />
                     )}
                   </div>

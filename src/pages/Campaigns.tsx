@@ -11,6 +11,7 @@ import { Button } from '../components/ui/button';
 import { TrendingUp, TrendingDown, MessageSquare, Users, Target, Activity, Mail } from 'lucide-react';
 import type { CampaignSplitEmail, EmailResponse } from '../types/dashboard';
 import { CampaignsByResponseDate } from '../components/dashboard/CampaignsByResponseDate';
+import { CampaignPerformanceChart } from '../components/charts/CampaignPerformanceChart';
 
 
 export default function Campaigns() {
@@ -254,40 +255,16 @@ export default function Campaigns() {
 
 
 
-      {/* Top Campaigns Summary */}
+      {/* Top Campaigns Performance Chart */}
       <Card className="shadow-sm border border-border/50">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-foreground">Top 5 Campaigns Performance</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Best performing campaigns by total replies
-          </p>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="p-2">
           {topCampaigns && topCampaigns.length > 0 ? (
-            <div className="space-y-4">
-              {topCampaigns.map((campaign, index) => {
-                const successRate = campaign.total_replies > 0 
-                  ? ((campaign.positive_replies || 0) / campaign.total_replies * 100).toFixed(1)
-                  : '0';
-                
-                return (
-                  <div key={campaign.campaign_id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div className="flex-1">
-                      <div className="font-medium text-foreground">{campaign.campaign_name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {campaign.total_replies} total replies • {campaign.positive_replies || 0} positive • {successRate}% success rate
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-primary">{campaign.total_replies}</div>
-                      <div className="text-xs text-muted-foreground">replies</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <CampaignPerformanceChart 
+              campaigns={topCampaigns}
+              className="h-80"
+            />
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-muted-foreground p-6">
               <p>No campaign data available</p>
               <p className="text-sm mt-2">Campaigns will appear here once data is loaded</p>
             </div>

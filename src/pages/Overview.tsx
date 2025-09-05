@@ -1,17 +1,19 @@
-import { useAllResponsesTotals, useAllResponsesPositive, useAllResponsesDaily, useAllResponsesWeekday, useAllResponses, useEmailInterested, useEmailsSent, /* useSmartleadCampaigns, useSmartleadMetrics */ } from '../hooks/useDashboardData';
+import { useAllTimeResponsesTotals, useAllTimeResponsesPositive, useAllTimeResponsesDaily, useAllTimeResponsesWeekday, useAllTimeResponses, useAllTimeEmailInterested, useAllTimeEmailsSent, useAllTimeResponsesBySequence } from '../hooks/useDashboardData';
 import { KPICard } from '../components/dashboard/KPICard';
-import { FilterToolbar } from '../components/dashboard/FilterToolbar';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Mail, TrendingUp, MessageCircle, Send, Target, Activity } from 'lucide-react';
+import { BarBasic, LineBasic, DoughnutBasic, BarMulti } from '../components/charts/CdnCharts';
+import type { DashboardInput } from '../types/charts';
 
 export default function Overview() {
-  const { data: allResponsesTotals, isLoading: loadingTotals } = useAllResponsesTotals();
-  const { data: allResponsesPositive, isLoading: loadingPositive } = useAllResponsesPositive();
-  const { data: allResponsesDaily, isLoading: loadingDaily } = useAllResponsesDaily();
-  const { data: allResponsesWeekday, isLoading: loadingWeekday } = useAllResponsesWeekday();
-  const { data: allResponses, isLoading: loadingResponses } = useAllResponses();
-  const { data: interestedCount, isLoading: loadingInterested } = useEmailInterested();
-  const { data: emailsSent, isLoading: loadingEmailsSent } = useEmailsSent();
+  const { data: allResponsesTotals, isLoading: loadingTotals } = useAllTimeResponsesTotals();
+  const { data: allResponsesPositive, isLoading: loadingPositive } = useAllTimeResponsesPositive();
+  const { data: allResponsesDaily, isLoading: loadingDaily } = useAllTimeResponsesDaily();
+  const { data: allResponsesWeekday, isLoading: loadingWeekday } = useAllTimeResponsesWeekday();
+  const { data: allResponses, isLoading: loadingResponses } = useAllTimeResponses();
+  const { data: interestedCount, isLoading: loadingInterested } = useAllTimeEmailInterested();
+  const { data: emailsSent, isLoading: loadingEmailsSent } = useAllTimeEmailsSent();
+  const { data: responsesBySequence, isLoading: loadingSequence } = useAllTimeResponsesBySequence();
 
   // Calculate KPIs
   const totalResponses = allResponsesTotals?.reduce((sum, channel) => sum + channel.total_responses, 0) || 0;
@@ -22,9 +24,6 @@ export default function Overview() {
 
   return (
     <div className="p-3 sm:p-6 space-y-6 sm:space-y-8">
-      {/* Filter Toolbar */}
-      <FilterToolbar />
-
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <KPICard
@@ -56,34 +55,49 @@ export default function Overview() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <Card className="shadow-sm border border-border/50">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-foreground">Daily Responses Summary</CardTitle>
-            <p className="text-sm text-muted-foreground">Recent response activity</p>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {allResponsesDaily?.slice(0, 7).map((day, index) => (
-                <div key={index} className="flex justify-between items-center py-2 border-b border-border/50 last:border-b-0">
-                  <span className="text-sm text-muted-foreground">{day.received_date}</span>
-                  <span className="font-medium">{day.n} responses</span>
-                </div>
-              )) || (
-                <div className="text-center py-8 text-muted-foreground">
-                  No daily response data available
-                </div>
-              )}
-            </div>
+          <CardContent className="p-6">
+            {(() => {
+              // Convert daily data to chart format - show more data points
+              const dailyData = allResponsesDaily || [];
+              
+              // Group by date to combine multiple channels for the same date
+              const dateMap = new Map<string, number>();
+              dailyData.forEach(day => {
+                const date = day.received_date;
+                dateMap.set(date, (dateMap.get(date) || 0) + day.n);
+              });
+              
+              // Convert to arrays and sort by date
+              const sortedDates = Array.from(dateMap.keys()).sort((a, b) => 
+                new Date(a).getTime() - new Date(b).getTime()
+              );
+              
+              const dailyLabels = sortedDates.map(date => {
+                const dateObj = new Date(date);
+                return dateObj.toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric' 
+                });
+              });
+              const dailyValues = sortedDates.map(date => dateMap.get(date) || 0);
+              
+              return (
+                <LineBasic 
+                  title="Daily Responses Summary" 
+                  labels={dailyLabels} 
+                  values={dailyValues}
+                  className="h-80"
+                />
+              );
+            })()}
           </CardContent>
         </Card>
 
         <Card className="shadow-sm border border-border/50">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-foreground">Response Labels Summary</CardTitle>
-            <p className="text-sm text-muted-foreground">Distribution of response types</p>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {allResponses?.reduce((acc, response) => {
+          <CardContent className="p-6">
+            {(() => {
+              // Convert response labels data to chart format
+              const labelData = allResponses?.reduce((acc, response) => {
                 const label = response.response_label || 'Unknown';
                 const existing = acc.find(item => item.label === label);
                 if (existing) {
@@ -94,42 +108,169 @@ export default function Overview() {
                 return acc;
               }, [] as { label: string; count: number }[])
               ?.sort((a, b) => b.count - a.count)
-              ?.slice(0, 8)
-              ?.map((item, index) => (
-                <div key={index} className="flex justify-between items-center py-2 border-b border-border/50 last:border-b-0">
-                  <span className="text-sm text-muted-foreground capitalize">{item.label.replace('_', ' ')}</span>
-                  <span className="font-medium">{item.count}</span>
-                </div>
-              )) || (
-                <div className="text-center py-8 text-muted-foreground">
-                  No response label data available
-                </div>
-              )}
-            </div>
+              ?.slice(0, 8) || [];
+              
+              const labelLabels = labelData.map(item => item.label.replace('_', ' '));
+              const labelValues = labelData.map(item => item.count);
+              
+              return (
+                <DoughnutBasic 
+                  title="Response Labels Summary" 
+                  labels={labelLabels} 
+                  values={labelValues}
+                  className="h-80"
+                />
+              );
+            })()}
           </CardContent>
         </Card>
       </div>
 
-      {/* Weekday Summary */}
+      {/* Weekday Summary Chart */}
       <Card className="shadow-sm border border-border/50">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-foreground">Responses by Weekday</CardTitle>
-          <p className="text-sm text-muted-foreground">Distribution of responses by day of the week</p>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
-            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => {
+        <CardContent className="p-6">
+          {(() => {
+            // Convert weekday data to chart format
+            const weekdayLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const weekdayValues = weekdayLabels.map((_, index) => {
               const dayData = allResponsesWeekday?.find(d => d.received_weekday === index + 1);
+              return dayData?.n_leads || 0;
+            });
+            
+            return (
+              <BarBasic 
+                title="Responses by Weekday" 
+                labels={weekdayLabels} 
+                values={weekdayValues}
+                className="h-80"
+              />
+            );
+          })()}
+        </CardContent>
+      </Card>
+
+      {/* Response Sequence Chart */}
+      <Card className="shadow-sm border border-border/50">
+        <CardContent className="p-6">
+          {(() => {
+            if (loadingSequence) {
+              return <div className="h-80 flex items-center justify-center">Loading sequence data...</div>;
+            }
+
+            if (!responsesBySequence || responsesBySequence.length === 0) {
+              return <div className="h-80 flex items-center justify-center text-muted-foreground">No sequence data available</div>;
+            }
+
+            // Convert sequence data to chart format
+            const sequenceLabels = responsesBySequence.map(item => `${item.sequence}${getOrdinalSuffix(item.sequence)}`);
+            const totalCounts = responsesBySequence.map(item => item.total_count);
+            const positiveCounts = responsesBySequence.map(item => item.positive_count);
+
+            // Calculate percentages for display
+            const totalResponses = totalCounts.reduce((sum, count) => sum + count, 0);
+            const totalPositiveResponses = positiveCounts.reduce((sum, count) => sum + count, 0);
+
+            const totalPercentages = totalCounts.map(count => 
+              totalResponses > 0 ? ((count / totalResponses) * 100).toFixed(1) : '0.0'
+            );
+            const positivePercentages = positiveCounts.map(count => 
+              totalPositiveResponses > 0 ? ((count / totalPositiveResponses) * 100).toFixed(1) : '0.0'
+            );
+
+            return (
+              <BarMulti
+                title="Responses by Sequence"
+                labels={sequenceLabels}
+                datasets={[
+                  {
+                    label: 'Total Responses',
+                    data: totalCounts,
+                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                  },
+                  {
+                    label: 'Positive Responses',
+                    data: positiveCounts,
+                    backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                    borderColor: 'rgba(34, 197, 94, 1)',
+                  }
+                ]}
+                className="h-80"
+              />
+            );
+          })()}
+        </CardContent>
+      </Card>
+
+      {/* Response Sequence Percentages */}
+      <Card className="shadow-sm border border-border/50">
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Response Sequence Analysis</h3>
+            {(() => {
+              if (loadingSequence) {
+                return <div>Loading sequence analysis...</div>;
+              }
+
+              if (!responsesBySequence || responsesBySequence.length === 0) {
+                return <div className="text-muted-foreground">No sequence data available</div>;
+              }
+
+              const totalResponses = responsesBySequence.reduce((sum, item) => sum + item.total_count, 0);
+              const totalPositiveResponses = responsesBySequence.reduce((sum, item) => sum + item.positive_count, 0);
+
               return (
-                <div key={index} className="text-center p-3 bg-muted/50 rounded-lg">
-                  <div className="text-sm text-muted-foreground mb-1">{day.slice(0, 3)}</div>
-                  <div className="text-lg font-bold">{dayData?.n_leads || 0}</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium mb-3">Response Distribution by Sequence</h4>
+                    <div className="space-y-2">
+                      {responsesBySequence.map(item => {
+                        const percentage = totalResponses > 0 ? ((item.total_count / totalResponses) * 100).toFixed(1) : '0.0';
+                        return (
+                          <div key={item.sequence} className="flex justify-between items-center">
+                            <span>{item.sequence}{getOrdinalSuffix(item.sequence)}:</span>
+                            <span className="font-medium">{percentage}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-3">Positive Response Distribution by Sequence</h4>
+                    <div className="space-y-2">
+                      {responsesBySequence.map(item => {
+                        const percentage = totalPositiveResponses > 0 ? ((item.positive_count / totalPositiveResponses) * 100).toFixed(1) : '0.0';
+                        return (
+                          <div key={item.sequence} className="flex justify-between items-center">
+                            <span>{item.sequence}{getOrdinalSuffix(item.sequence)}:</span>
+                            <span className="font-medium text-green-600">{percentage}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               );
-            })}
+            })()}
           </div>
         </CardContent>
       </Card>
     </div>
   );
+}
+
+// Helper function to get ordinal suffix (1st, 2nd, 3rd, etc.)
+function getOrdinalSuffix(num: number): string {
+  const j = num % 10;
+  const k = num % 100;
+  if (j === 1 && k !== 11) {
+    return 'st';
+  }
+  if (j === 2 && k !== 12) {
+    return 'nd';
+  }
+  if (j === 3 && k !== 13) {
+    return 'rd';
+  }
+  return 'th';
 }

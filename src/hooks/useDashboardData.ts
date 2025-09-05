@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../integrations/supabase/client';
 import { useDashboardStore } from '../store/dashboard';
 import { webhookDateToISO } from '../lib/dateUtils';
+import { deduplicateResponses } from '../lib/utils';
 import type {
   ChannelTotals,
   ChannelPositive,
@@ -262,7 +263,7 @@ export const useAllResponses = () => {
           .from('responses')
           .select(`
             *,
-            leads(company_name, full_name),
+            leads(company_name, full_name, email),
             campaigns(campaign_name)
           `)
           .order('id', { ascending: false });
@@ -286,7 +287,7 @@ export const useAllResponses = () => {
           throw error;
         }
 
-        return data || [];
+        return deduplicateResponses(data || []);
       } catch (error) {
         console.error('All responses error:', error);
         return [];
@@ -623,8 +624,8 @@ export const useCampaignsWithDates = () => {
         const campaignMap = new Map<string, CampaignWithDates>();
         
         campaignIdMap.forEach(({ campaignName, responses }, campaignId) => {
-          // Extract base campaign name by removing "(catch_all)" suffix
-          const baseCampaignName = campaignName.replace(/\s*\(catch_all\)\s*$/i, '').trim();
+          // Extract base campaign name by removing "(catch_all)" and "(copy)" suffixes
+          const baseCampaignName = campaignName.replace(/\s*\((catch_all|copy)\)\s*(\(copy\)\s*)?$/i, '').trim();
           
           if (!campaignMap.has(baseCampaignName)) {
             campaignMap.set(baseCampaignName, {
@@ -665,7 +666,7 @@ export const useCampaignsWithDates = () => {
           // Count responses in last 7 and 30 days for this base campaign name
           const recentResponses = (data || []).filter(response => {
             const responseCampaignName = (response.campaigns as any)?.campaign_name || 'Unknown';
-            const baseResponseCampaignName = responseCampaignName.replace(/\s*\(catch_all\)\s*$/i, '').trim();
+            const baseResponseCampaignName = responseCampaignName.replace(/\s*\((catch_all|copy)\)\s*(\(copy\)\s*)?$/i, '').trim();
             return baseResponseCampaignName === campaign.campaign_name && response.received_date_iso_clay;
           });
           
@@ -873,7 +874,8 @@ export const useLeads = () => {
 
       // Add campaign filter if provided
       if (filters.campaign && filters.campaign.length > 0) {
-        query = query.in('campaign_id', filters.campaign);
+        const campaignNames = filters.campaign;
+        query = query.in('campaigns.campaign_name', campaignNames);
       }
       
       const { data, error } = await query;
@@ -911,12 +913,12 @@ export const useCampaigns = () => {
         return [];
       }
 
-      // Combine campaigns with same base name but different "(catch_all)" suffixes
+      // Combine campaigns with same base name but different "(catch_all)" and "(copy)" suffixes
       const campaignMap = new Map<string, Campaign>();
       
       (data || []).forEach(campaign => {
-        // Extract base campaign name by removing "(catch_all)" suffix
-        const baseCampaignName = campaign.campaign_name.replace(/\s*\(catch_all\)\s*$/i, '').trim();
+        // Extract base campaign name by removing "(catch_all)" and "(copy)" suffixes
+        const baseCampaignName = campaign.campaign_name.replace(/\s*\((catch_all|copy)\)\s*(\(copy\)\s*)?$/i, '').trim();
         
         // Use the first campaign found as the primary one (keep original ID and other fields)
         if (!campaignMap.has(baseCampaignName)) {
@@ -1444,8 +1446,8 @@ export const useCampaignSplitEmail = () => {
         const campaignMap = new Map<string, CampaignSplitEmail>();
         
         campaignIdMap.forEach(({ campaignName, responses }, campaignId) => {
-          // Extract base campaign name by removing "(catch_all)" suffix
-          const baseCampaignName = campaignName.replace(/\s*\(catch_all\)\s*$/i, '').trim();
+          // Extract base campaign name by removing "(catch_all)" and "(copy)" suffixes
+          const baseCampaignName = campaignName.replace(/\s*\((catch_all|copy)\)\s*(\(copy\)\s*)?$/i, '').trim();
           
           if (!campaignMap.has(baseCampaignName)) {
             campaignMap.set(baseCampaignName, {
@@ -1504,7 +1506,7 @@ export const useEmailResponses = (campaignId?: string) => {
           .from('responses')
           .select(`
             *,
-            leads(company_name, full_name),
+            leads(company_name, full_name, email),
             campaigns(campaign_name)
           `)
           .eq('channel', 'email')
@@ -1543,14 +1545,16 @@ export const useEmailResponses = (campaignId?: string) => {
         }
         
         // Transform to expected format and clean campaign names
-        return data?.map(item => ({
+        const transformedData = data?.map(item => ({
           ...item,
           created_at: item.received_at || new Date().toISOString(), // Use received_at as fallback
           campaigns: item.campaigns ? {
             ...item.campaigns,
-            campaign_name: item.campaigns.campaign_name?.replace(/\s*\(catch_all\)\s*$/i, '').trim() || item.campaigns.campaign_name
+            campaign_name: item.campaigns.campaign_name?.replace(/\s*\((catch_all|copy)\)\s*(\(copy\)\s*)?$/i, '').trim() || item.campaigns.campaign_name
           } : item.campaigns
         })) || [];
+
+        return deduplicateResponses(transformedData);
       } catch (error) {
         console.error('Email responses error:', error);
         return [];
@@ -1711,6 +1715,336 @@ export const useActualDateRange = () => {
       }
     },
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+};
+
+// All-time hooks for Overview page - these ignore date filters and always fetch all data
+export const useAllTimeResponsesTotals = () => {
+  return useQuery({
+    queryKey: ['allTimeResponsesTotals'],
+    queryFn: async (): Promise<ChannelTotals[]> => {
+      try {
+        const { data, error } = await supabase
+          .from('responses')
+          .select('channel');
+        
+        if (error) {
+          console.error('All-time responses totals error:', error);
+          throw error;
+        }
+
+        // Group by channel and count responses
+        const channelMap = new Map<string, number>();
+        (data || []).forEach(response => {
+          const channel = response.channel;
+          channelMap.set(channel, (channelMap.get(channel) || 0) + 1);
+        });
+
+        return Array.from(channelMap.entries()).map(([channel, count]) => ({
+          channel: channel as ChannelEnum,
+          total_responses: count
+        }));
+      } catch (error) {
+        console.error('All-time responses totals error:', error);
+        return [];
+      }
+    },
+    staleTime: 60 * 1000,
+  });
+};
+
+export const useAllTimeResponsesPositive = () => {
+  return useQuery({
+    queryKey: ['allTimeResponsesPositive'],
+    queryFn: async (): Promise<ChannelPositive[]> => {
+      try {
+        const { data, error } = await supabase
+          .from('responses')
+          .select(`
+            channel,
+            response_label
+          `);
+
+        if (error) {
+          console.error('All-time responses positive error:', error);
+          throw error;
+        }
+
+        // Group by channel and calculate positive rates
+        const channelMap = new Map<string, { total: number; positive: number }>();
+        (data || []).forEach(response => {
+          const channel = response.channel;
+          const current = channelMap.get(channel) || { total: 0, positive: 0 };
+          current.total++;
+          if (['Interested', 'Referral'].includes(response.response_label || '')) {
+            current.positive++;
+          }
+          channelMap.set(channel, current);
+        });
+
+        return Array.from(channelMap.entries()).map(([channel, counts]) => ({
+          channel: channel as ChannelEnum,
+          positive_count: counts.positive,
+          total_count: counts.total,
+          positive_pct: counts.total > 0 ? (counts.positive / counts.total) * 100 : 0
+        }));
+      } catch (error) {
+        console.error('All-time responses positive error:', error);
+        return [];
+      }
+    },
+    staleTime: 60 * 1000,
+  });
+};
+
+export const useAllTimeResponsesDaily = () => {
+  return useQuery({
+    queryKey: ['allTimeResponsesDaily'],
+    queryFn: async (): Promise<DailyCounts[]> => {
+      try {
+        // Get today's date in ISO format to filter out future dates
+        const today = new Date().toISOString().split('T')[0];
+        
+        const { data, error } = await supabase
+          .from('responses')
+          .select(`
+            received_date_iso_clay,
+            channel
+          `)
+          .lte('received_date_iso_clay', today); // Filter out future dates
+
+        if (error) {
+          console.error('All-time responses daily error:', error);
+          throw error;
+        }
+
+        // Group by date and channel
+        const dateChannelMap = new Map<string, Map<string, number>>();
+        (data || []).forEach(response => {
+          const date = response.received_date_iso_clay;
+          const channel = response.channel;
+          
+          if (!dateChannelMap.has(date)) {
+            dateChannelMap.set(date, new Map());
+          }
+          
+          const channelMap = dateChannelMap.get(date)!;
+          channelMap.set(channel, (channelMap.get(channel) || 0) + 1);
+        });
+
+        // Convert to array format
+        const result: DailyCounts[] = [];
+        dateChannelMap.forEach((channelMap, date) => {
+          channelMap.forEach((count, channel) => {
+            result.push({
+              received_date: date,
+              channel: channel as ChannelEnum,
+              n: count
+            });
+          });
+        });
+
+        return result.sort((a, b) => new Date(a.received_date).getTime() - new Date(b.received_date).getTime());
+      } catch (error) {
+        console.error('All-time responses daily error:', error);
+        return [];
+      }
+    },
+    staleTime: 60 * 1000,
+  });
+};
+
+export const useAllTimeResponsesWeekday = () => {
+  return useQuery({
+    queryKey: ['allTimeResponsesWeekday'],
+    queryFn: async (): Promise<ResponsesByWeekday[]> => {
+      try {
+        const { data, error } = await supabase
+          .from('responses')
+          .select(`
+            received_date_iso_clay,
+            channel
+          `);
+
+        if (error) {
+          console.error('All-time responses weekday error:', error);
+          throw error;
+        }
+
+        // Group by weekday and channel
+        const weekdayChannelMap = new Map<number, Map<string, number>>();
+        (data || []).forEach(response => {
+          const date = new Date(response.received_date_iso_clay);
+          const weekday = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+          const channel = response.channel;
+          
+          if (!weekdayChannelMap.has(weekday)) {
+            weekdayChannelMap.set(weekday, new Map());
+          }
+          
+          const channelMap = weekdayChannelMap.get(weekday)!;
+          channelMap.set(channel, (channelMap.get(channel) || 0) + 1);
+        });
+
+        // Convert to array format
+        const result: ResponsesByWeekday[] = [];
+        weekdayChannelMap.forEach((channelMap, weekday) => {
+          channelMap.forEach((count, channel) => {
+            result.push({
+              received_weekday: weekday,
+              channel: channel as ChannelEnum,
+              n_leads: count
+            });
+          });
+        });
+
+        return result.sort((a, b) => a.received_weekday - b.received_weekday);
+      } catch (error) {
+        console.error('All-time responses weekday error:', error);
+        return [];
+      }
+    },
+    staleTime: 60 * 1000,
+  });
+};
+
+export const useAllTimeResponses = () => {
+  return useQuery({
+    queryKey: ['allTimeResponses'],
+    queryFn: async (): Promise<Response[]> => {
+      try {
+        const { data, error } = await supabase
+          .from('responses')
+          .select(`
+            *,
+            leads(company_name, full_name, email),
+            campaigns(campaign_name)
+          `)
+          .order('id', { ascending: false });
+
+        if (error) {
+          console.error('All-time responses error:', error);
+          throw error;
+        }
+
+        return data || [];
+      } catch (error) {
+        console.error('All-time responses error:', error);
+        return [];
+      }
+    },
+    staleTime: 60 * 1000,
+  });
+};
+
+export const useAllTimeEmailInterested = () => {
+  return useQuery({
+    queryKey: ['allTimeEmailInterested'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('responses')
+        .select('response_label')
+        .eq('channel', 'email')
+        .eq('response_label', 'Interested');
+      
+      if (error) {
+        console.error('All-time email interested error:', error);
+        return 0;
+      }
+      return data?.length || 0;
+    },
+    staleTime: 60 * 1000,
+  });
+};
+
+export const useAllTimeEmailsSent = () => {
+  return useQuery({
+    queryKey: ['allTimeEmailsSent'],
+    queryFn: async (): Promise<EmailsSent[]> => {
+      try {
+        const { data, error } = await supabase
+          .from('v_total_emails_sent')
+          .select('total_emails_sent');
+        
+        if (error) {
+          console.error('All-time emails sent error:', error);
+          throw error;
+        }
+        
+        return data || [{ total_emails_sent: 0 }];
+      } catch (error) {
+        console.error('All-time emails sent error:', error);
+        // Fallback: Calculate directly from leads table
+        const { data, error: fallbackError } = await supabase
+          .from('leads')
+          .select('id')
+          .eq('first_touch_channel', 'email');
+        
+        if (fallbackError) {
+          console.error('Fallback all-time emails sent error:', fallbackError);
+          return [{ total_emails_sent: 0 }];
+        }
+        
+        return [{ 
+          total_emails_sent: data?.length || 0 
+        }];
+      }
+    },
+    staleTime: 60 * 1000,
+  });
+};
+
+// New hooks for response sequence data
+export const useAllTimeResponsesBySequence = () => {
+  return useQuery({
+    queryKey: ['allTimeResponsesBySequence'],
+    queryFn: async (): Promise<{ sequence: number; total_count: number; positive_count: number }[]> => {
+      try {
+        const { data, error } = await supabase
+          .from('responses')
+          .select(`
+            response_sequence,
+            response_label
+          `)
+          .not('response_sequence', 'is', null);
+
+        if (error) {
+          console.error('All-time responses by sequence error:', error);
+          throw error;
+        }
+
+        // Group by sequence and calculate totals and positive counts
+        const sequenceMap = new Map<number, { total: number; positive: number }>();
+        
+        (data || []).forEach(response => {
+          const sequence = response.response_sequence;
+          const isPositive = ['Interested', 'Referral'].includes(response.response_label || '');
+          
+          if (!sequenceMap.has(sequence)) {
+            sequenceMap.set(sequence, { total: 0, positive: 0 });
+          }
+          
+          const current = sequenceMap.get(sequence)!;
+          current.total++;
+          if (isPositive) {
+            current.positive++;
+          }
+        });
+
+        // Convert to array and sort by sequence
+        return Array.from(sequenceMap.entries())
+          .map(([sequence, counts]) => ({
+            sequence,
+            total_count: counts.total,
+            positive_count: counts.positive
+          }))
+          .sort((a, b) => a.sequence - b.sequence);
+      } catch (error) {
+        console.error('All-time responses by sequence error:', error);
+        return [];
+      }
+    },
+    staleTime: 60 * 1000,
   });
 };
 
