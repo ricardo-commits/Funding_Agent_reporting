@@ -106,7 +106,7 @@ export default function Campaigns() {
         </div>
       ) : error ? (
         <div className="text-center py-16">
-          <div className="text-red-600 mb-4">Error loading campaigns: {error.message}</div>
+          <div className="text-fa-danger mb-4">Error loading campaigns: {error.message}</div>
           <div className="text-sm text-muted-foreground">Please check your database connection and try again.</div>
         </div>
       ) : (
@@ -122,30 +122,30 @@ export default function Campaigns() {
               // Define success rate categories
               const getSuccessRateStyle = (rate: number) => {
                 if (rate >= 20) return {
-                  bgColor: "bg-green-100",
-                  textColor: "text-green-800",
-                  borderColor: "border-green-200",
+                  bgColor: "bg-fa-success/10",
+                  textColor: "text-fa-success",
+                  borderColor: "border-fa-success/20",
                   variant: "default" as const,
                   label: "Excellent"
                 };
                 if (rate >= 10) return {
-                  bgColor: "bg-blue-100",
-                  textColor: "text-blue-800",
-                  borderColor: "border-blue-200",
+                  bgColor: "bg-primary/10",
+                  textColor: "text-primary",
+                  borderColor: "border-primary/20",
                   variant: "default" as const,
                   label: "Good"
                 };
                 if (rate >= 5) return {
-                  bgColor: "bg-yellow-100",
-                  textColor: "text-yellow-800",
-                  borderColor: "border-yellow-200",
+                  bgColor: "bg-fa-warning/10",
+                  textColor: "text-fa-warning",
+                  borderColor: "border-fa-warning/20",
                   variant: "secondary" as const,
                   label: "Fair"
                 };
                 return {
-                  bgColor: "bg-red-100",
-                  textColor: "text-red-800",
-                  borderColor: "border-red-200",
+                  bgColor: "bg-fa-danger/10",
+                  textColor: "text-fa-danger",
+                  borderColor: "border-fa-danger/20",
                   variant: "destructive" as const,
                   label: "Needs Improvement"
                 };
@@ -299,14 +299,14 @@ export default function Campaigns() {
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Total Replies</div>
               </div>
-              <div className="text-center p-3 sm:p-4 bg-green-50 rounded-lg">
-                <div className="text-xl sm:text-2xl font-bold text-green-600">
+              <div className="text-center p-3 sm:p-4 bg-fa-success/10 rounded-lg border border-fa-success/20">
+                <div className="text-xl sm:text-2xl font-bold text-fa-success">
                   {selectedCampaign?.positive_replies || 0}
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Positive Replies</div>
               </div>
-              <div className="text-center p-3 sm:p-4 bg-red-50 rounded-lg">
-                <div className="text-xl sm:text-2xl font-bold text-red-600">
+              <div className="text-center p-3 sm:p-4 bg-fa-danger/10 rounded-lg border border-fa-danger/20">
+                <div className="text-xl sm:text-2xl font-bold text-fa-danger">
                   {selectedCampaign?.negative_replies || 0}
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground">Negative Replies</div>

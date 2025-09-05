@@ -9,6 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '../ui/sidebar';
 import { Button } from '../ui/button';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -46,6 +47,7 @@ const navigationItems = [
 export function AppSidebar() {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { isMobile, setOpenMobile } = useSidebar();
   // const { user, signOut } = useAuth();
   
   const isActive = (path: string) => {
@@ -59,6 +61,13 @@ export function AppSidebar() {
     isActive(path)
       ? 'bg-primary text-primary-foreground font-medium'
       : 'hover:bg-accent hover:text-accent-foreground';
+
+  const handleNavClick = () => {
+    // Close sidebar on mobile when nav link is clicked
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <Sidebar>
@@ -86,6 +95,7 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       className={getNavClasses(item.url)}
+                      onClick={handleNavClick}
                     >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
