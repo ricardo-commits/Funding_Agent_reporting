@@ -1,4 +1,4 @@
-import { BarChart3, Users, MessageSquare, Settings, Target, TrendingUp } from 'lucide-react';
+import { BarChart3, Users, MessageSquare, Settings, Target, TrendingUp, Moon, Sun } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Sidebar,
@@ -10,8 +10,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '../ui/sidebar';
+import { Button } from '../ui/button';
+import { useTheme } from '../../contexts/ThemeContext';
 // import { useAuth } from '../auth/AuthProvider';
-// import { Button } from '../ui/button';
 
 const navigationItems = [
   {
@@ -44,6 +45,7 @@ const navigationItems = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   // const { user, signOut } = useAuth();
   
   const isActive = (path: string) => {
@@ -62,16 +64,15 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent className="bg-card border-r border-border">
         <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <TrendingUp className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <div>
-              <h2 className="text-lg font-heading font-semibold text-foreground">
-                Funding Agent
-              </h2>
-              <p className="text-sm text-muted-foreground">Dashboard</p>
-            </div>
+          <div className="flex flex-col gap-2">
+            <img 
+              src="https://cdn.prod.website-files.com/67efd26a8d1c97e288c50c5b/67efe2bf18508d8ae1163d12_Group%2091.svg" 
+              alt="Logo" 
+              className="w-full h-auto max-h-12"
+            />
+            <h2 className="text-lg font-heading font-semibold text-foreground">
+              Dashboard
+            </h2>
           </div>
         </div>
         
@@ -96,24 +97,22 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* User info and sign out removed - no authentication required */}
-        {/* <div className="mt-auto p-4 border-t border-border">
-          <div className="space-y-3">
-            <div className="text-sm">
-              <div className="font-medium text-foreground">{user?.email}</div>
-              <div className="text-muted-foreground">Authenticated User</div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={signOut}
-              className="w-full justify-start"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </div> */}
+        {/* Theme Toggle */}
+        <div className="mt-auto p-4 border-t border-border">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleTheme}
+            className="w-full justify-start"
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4 mr-2" />
+            ) : (
+              <Moon className="h-4 w-4 mr-2" />
+            )}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </Button>
+        </div>
       </SidebarContent>
     </Sidebar>
   );

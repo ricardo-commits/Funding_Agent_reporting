@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Switch } from '../components/ui/switch';
@@ -7,9 +6,10 @@ import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
 import { Copy, ExternalLink } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Settings() {
-  const [darkMode, setDarkMode] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
 
   const embedCode = `<iframe
@@ -58,14 +58,14 @@ export default function Settings() {
               </div>
             </div>
             <Switch
-              checked={darkMode}
-              onCheckedChange={setDarkMode}
+              checked={theme === 'dark'}
+              onCheckedChange={toggleTheme}
             />
           </div>
-          {darkMode && (
+          {theme === 'dark' && (
             <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
               <div className="text-sm text-amber-800 dark:text-amber-200">
-                Note: Dark mode is not fully implemented in this version. This toggle is for demonstration purposes.
+                Dark mode is now active! The theme will be saved and persist across sessions.
               </div>
             </div>
           )}

@@ -86,7 +86,6 @@ export default function Overview() {
                   title="Daily Responses Summary" 
                   labels={dailyLabels} 
                   values={dailyValues}
-                  className="h-80"
                 />
               );
             })()}
@@ -118,7 +117,6 @@ export default function Overview() {
                   title="Response Labels Summary" 
                   labels={labelLabels} 
                   values={labelValues}
-                  className="h-80"
                 />
               );
             })()}
@@ -243,7 +241,7 @@ export default function Overview() {
                         return (
                           <div key={item.sequence} className="flex justify-between items-center">
                             <span>{item.sequence}{getOrdinalSuffix(item.sequence)}:</span>
-                            <span className="font-medium text-green-600">{percentage}%</span>
+                            <span className="font-medium text-fa-success">{percentage}%</span>
                           </div>
                         );
                       })}
