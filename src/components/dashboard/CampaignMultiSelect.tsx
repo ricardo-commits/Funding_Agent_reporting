@@ -66,7 +66,7 @@ export function CampaignMultiSelect({ className }: CampaignMultiSelectProps) {
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-80 justify-between"
+        className="w-full sm:w-80 justify-between"
         disabled={isLoading}
       >
         <span className="truncate">{getDisplayText()}</span>

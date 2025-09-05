@@ -300,6 +300,39 @@ left join public.leads l on l.campaign_id = c.id
 group by c.campaign_name
 order by total_leads desc;
 
+-- Emails sent by campaign
+create or replace view public.v_emails_sent as
+select
+  c.campaign_name,
+  c.id as campaign_id,
+  count(l.*)::int as total_emails_sent,
+  count(l.*) filter (where l.first_touch_channel = 'email')::int as email_leads,
+  count(l.*) filter (where l.first_touch_channel = 'linkedin')::int as linkedin_leads
+from public.campaigns c
+left join public.leads l on l.campaign_id = c.id
+group by c.campaign_name, c.id
+order by total_emails_sent desc;
+
+-- Total emails sent across all campaigns
+create or replace view public.v_total_emails_sent as
+select
+  count(l.*)::int as total_emails_sent,
+  count(l.*) filter (where l.first_touch_channel = 'email')::int as email_leads,
+  count(l.*) filter (where l.first_touch_channel = 'linkedin')::int as linkedin_leads
+from public.leads l;
+
+-- Emails sent by date (for time-based analysis)
+create or replace view public.v_emails_sent_daily as
+select
+  l.created_at::date as sent_date,
+  c.campaign_name,
+  count(l.*)::int as emails_sent
+from public.leads l
+left join public.campaigns c on c.id = l.campaign_id
+where l.first_touch_channel = 'email'
+group by l.created_at::date, c.campaign_name
+order by sent_date desc;
+
 -- Response rate by campaign
 create or replace view public.v_response_rate as
 select

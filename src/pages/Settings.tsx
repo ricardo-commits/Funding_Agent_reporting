@@ -37,11 +37,11 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
+    <div className="max-w-4xl mx-auto p-3 sm:p-6 space-y-6 sm:space-y-8">
       {/* Page Header */}
-      <div className="flex items-center justify-between pb-6 border-b border-border">
-        <h1 className="text-3xl font-heading font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">Manage your application preferences and configuration</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-border gap-2">
+        <h1 className="text-2xl sm:text-3xl font-heading font-bold text-foreground">Settings</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Manage your application preferences and configuration</p>
       </div>
 
       {/* Theme Settings */}
@@ -50,10 +50,10 @@ export default function Settings() {
           <CardTitle className="text-xl">Appearance</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-muted/30 rounded-lg gap-4">
             <div className="space-y-1">
-              <Label className="text-base font-medium">Dark Mode</Label>
-              <div className="text-sm text-muted-foreground">
+              <Label className="text-sm sm:text-base font-medium">Dark Mode</Label>
+              <div className="text-xs sm:text-sm text-muted-foreground">
                 Toggle between light and dark theme
               </div>
             </div>
@@ -80,17 +80,17 @@ export default function Settings() {
         <CardContent className="space-y-6">
           <div className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-base font-medium">Supabase Project URL</Label>
-              <div className="flex items-center gap-3">
+              <Label className="text-sm sm:text-base font-medium">Supabase Project URL</Label>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <Input
                   value="https://timfyefhggsjyiyjhakh.supabase.co"
                   readOnly
-                  className="font-mono text-sm h-10"
+                  className="font-mono text-xs sm:text-sm h-10 flex-1"
                 />
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-10 w-10 flex-shrink-0"
                   onClick={() => copyConnectionString('https://timfyefhggsjyiyjhakh.supabase.co')}
                 >
                   <Copy className="h-4 w-4" />
@@ -99,17 +99,17 @@ export default function Settings() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-medium">Project ID</Label>
-              <div className="flex items-center gap-3">
+              <Label className="text-sm sm:text-base font-medium">Project ID</Label>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <Input
                   value="timfyefhggsjyiyjhakh"
                   readOnly
-                  className="font-mono text-sm h-10"
+                  className="font-mono text-xs sm:text-sm h-10 flex-1"
                 />
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-10 w-10 flex-shrink-0"
                   onClick={() => copyConnectionString('timfyefhggsjyiyjhakh')}
                 >
                   <Copy className="h-4 w-4" />
@@ -118,17 +118,17 @@ export default function Settings() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-medium">API Endpoint</Label>
-              <div className="flex items-center gap-3">
+              <Label className="text-sm sm:text-base font-medium">API Endpoint</Label>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <Input
                   value="https://timfyefhggsjyiyjhakh.supabase.co/rest/v1"
                   readOnly
-                  className="font-mono text-sm h-10"
+                  className="font-mono text-xs sm:text-sm h-10 flex-1"
                 />
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-10 w-10 flex-shrink-0"
                   onClick={() => copyConnectionString('https://timfyefhggsjyiyjhakh.supabase.co/rest/v1')}
                 >
                   <Copy className="h-4 w-4" />
@@ -163,7 +163,7 @@ export default function Settings() {
           <CardTitle className="text-xl">Available Data Views</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               'v_channel_totals',
               'v_channel_positive',
@@ -233,7 +233,7 @@ export default function Settings() {
           <CardTitle className="text-xl">Performance & Caching</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="p-4 bg-muted/30 rounded-lg space-y-2">
               <Label className="text-base font-medium">Query Cache Duration</Label>
               <div className="text-2xl font-bold text-primary">60 seconds</div>

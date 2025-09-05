@@ -60,8 +60,8 @@ export function TablePagination({
   }
 
   return (
-    <div className="flex items-center justify-between px-2 py-4">
-      <div className="text-sm text-muted-foreground">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 py-4">
+      <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
         Showing {startIndex} to {endIndex} of {totalItems} results
       </div>
       

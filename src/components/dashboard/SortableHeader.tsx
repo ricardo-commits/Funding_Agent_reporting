@@ -43,8 +43,10 @@ export function SortableHeader({
       className={`h-auto p-0 font-medium hover:bg-transparent ${getAlignmentClass()} ${className}`}
     >
       <div className="flex items-center gap-1">
-        <span>{label}</span>
-        {getSortIcon()}
+        <span className="text-xs sm:text-sm">{label}</span>
+        <div className="flex-shrink-0">
+          {getSortIcon()}
+        </div>
       </div>
     </Button>
   );

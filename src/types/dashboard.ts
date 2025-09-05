@@ -11,6 +11,7 @@ export interface DashboardFilters {
   dateRange: DateRange
   channel: string // Single channel, default to 'email'
   campaign?: string[] // Optional campaign filter - now supports multiple campaigns
+  responseDateRange: DateRange // New filter for response received dates
 }
 
 // New enum types matching the database schema
@@ -102,6 +103,40 @@ export interface CampaignSplit {
   info_requested: number
 }
 
+// New interface for campaigns with date filtering capabilities
+export interface CampaignWithDates {
+  id: string
+  campaign_name: string
+  sector?: string
+  is_active: boolean
+  created_at: string
+  received_date_iso_clay?: string
+  latest_response_date?: string
+  earliest_response_date?: string
+  total_responses: number
+  responses_last_7_days: number
+  responses_last_30_days: number
+}
+
+// New interface for campaign performance with date filtering
+export interface CampaignPerformanceDated {
+  campaign_name: string
+  sector?: string
+  is_active: boolean
+  latest_response_date?: string
+  earliest_response_date?: string
+  total_responses: number
+  responses_last_7_days: number
+  responses_last_30_days: number
+  interested: number
+  referral: number
+  do_not_contact: number
+  not_interested: number
+  out_of_office: number
+  wrong_person: number
+  positive_response_rate: number
+}
+
 // Legacy types for backward compatibility
 export interface EmailTotals {
   channel: string
@@ -133,7 +168,8 @@ export interface EmailsSent {
   total_emails_sent: number
 }
 
-// Smartlead Campaign types
+// Smartlead Campaign types - Commented out
+/*
 export interface SmartleadCampaign {
   id: string
   campaign_name: string
@@ -155,6 +191,7 @@ export interface SmartleadMetrics {
   average_reply_rate: number
   average_bounce_rate: number
 }
+*/
 
 export interface CampaignSplitEmail {
   campaign_id?: string
@@ -174,7 +211,10 @@ export interface EmailResponse {
   response_text: string
   created_at?: string
   received_at?: string
+  received_date_iso_clay?: string
+  time_of_day_iso?: string
   webhook_received_date?: string
+  webhook_time_of_day?: string
   leads?: {
     company_name: string
     full_name: string
